@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>To Do List</title>
+    <script src="https://unpkg.com/react@16/umd/react.development.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@16/umd/react-dom.development.js" crossorigin></script>
+    <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+
+    <style>
+        body {
+            background-color:lightgrey;
+        }
+
+		#listItem {
+			background-color:grey;
+			height:40px;
+			width:80%;
+			margin-left:10%;
+			margin-right:10%;
+			font-size:2em;
+			border:1px solid black;
+			margin-top:10px;
+        }
+
+        span{
+            padding-right:25%;
+        }
+
+        #listButton {
+            width:75px;
+            height:40px;
+            margin-left:20px;
+			float: right;
+        }
+
+        input {
+            width:300px;
+            height:50px;
+			font-size:150%;
+        }
+		
+		#topPart {
+		text-align:center;
+		}
+		
+		#topPart button {
+			height:50px;
+			margin-left:20px;
+			}
+    </style>
+</head>
+
+<body>
+
+<div id="container"></div>
+
+
+<script type="text/babel">
+    class FormContainer extends React.Component
+    {
+
+        constructor() {
+            super();
+            this.state = {
+                key: 0,
+				removeCounter: 0,
+                editMode: "Add Item",
+                currentEditID: 0,
+                textInput: '',
+                tasks: []
+            }
+        }
+
+        removeTask = (id) => {
+			const removeCounter = this.state.removeCounter;
+            const tasks = Object.assign([], this.state.tasks);
+            tasks.splice(id - removeCounter, 1);
+			console.log(tasks);
+            this.setState({tasks:tasks, removeCounter:removeCounter+1});
+			console.log("remove: " + id);
+			console.log(tasks);
+        }
+
+
+        editTask(id) {
+            this.setState({editMode: "Edit Item", currentEditID: id});
+			console.log("edit: " + id);
+        }
+
+        onInputChange(event) {
+            this.setState({textInput: event.target.value});
+        }
+
+
+
+        onButtonSubmission() {
+            if (this.state.editMode == "Add Item") {
+                const currentTasks = this.state.tasks;
+                const currentCounter = this.state.key++;
+                currentTasks.push({key:currentCounter, name:this.state.textInput});
+                this.setState({textInput:'', tasks:currentTasks})
+				console.log("item created: " + currentCounter);
+            }
+            else {
+				const index = this.state.currentEditID;
+                const task = Object.assign([], this.state.tasks[index]);
+                task.name = this.state.textInput;
+                const tasks = Object.assign([], this.state.tasks);
+                tasks[index] = task;
+                this.setState({tasks:tasks, editMode:"Add Item", textInput:""});
+				console.log("item changed: " + index);
+			}
+        }
+
+        render() {
+
+            return (
+                <FormPresentation
+                    onInputChange={this.onInputChange.bind(this)}
+                    textInput={this.state.textInput}
+                    editTask={this.editTask.bind(this)}
+                    removeTask={this.removeTask.bind(this)}
+                    onButtonSubmission={this.onButtonSubmission.bind(this)}
+                    editMode={this.state.editMode}
+                    tasks={this.state.tasks}
+                />
+            );
+        }
+    };
+
+
+    class FormPresentation extends React.Component {
+        renderLI({key, name}) {
+            return (
+                <div key={key} id="listItem">
+                    <span>Task {key+1}: {name}</span>
+                    <button id="listButton" onClick={this.props.removeTask.bind(this, key)}>Remove</button>
+                    <button id="listButton" onClick={this.props.editTask.bind(this, key)}>Edit</button>
+                </div>
+            );
+        }
+
+
+        render() {
+            return (
+                <div>
+					<div id="topPart">
+						<h1>To Do List</h1>
+						<input onChange={this.props.onInputChange} value={this.props.textInput}/>
+						<button onClick={this.props.onButtonSubmission}>{this.props.editMode}</button>
+					</div>
+					<div>
+                        {
+                            this.props.tasks.map(this.renderLI.bind(this))
+                        }
+                    </div>
+                </div>
+            );
+        }
+    };
+
+
+    ReactDOM.render(
+        <FormContainer />,
+        document.querySelector("#container")
+    );
+</script>
+</body>
+</html>
